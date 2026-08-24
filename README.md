@@ -1,4 +1,4 @@
-# Week 10: Dynamic Portfolio with Context & API Integration
+# Week 9: Dynamic Portfolio with Context & API Integration
 ## Transform Your Portfolio into a Data-Driven Application
 
 ### 🎯 Learning Objectives
@@ -12,9 +12,9 @@ By completing this project, you will:
 
 ### 📚 Prerequisites
 Before starting, you should have:
-- Completed Week 10 lecture on React Effects, Context API & Data Fetching
+- Completed Week 9 lecture on React Effects, Context API & Data Fetching
 - Reviewed prep work chapters: React Front To Back Chapters 6-7 (useEffect, Context & APIs)
-- Your code from Week 9 React State project (recommended)
+- Your code from Week 8 React State project (recommended)
 - Understanding of useState, component decomposition, and event handling
 
 ### 🏗️ Project Overview
@@ -22,7 +22,7 @@ This week, you'll elevate your portfolio from a static React application to a dy
 
 ### 🚀 Getting Started
 
-**First:** Accept the GitHub Classroom assignment link provided by your instructor. This will create a new repository with the Week 10 starter code.
+**First:** Accept the GitHub Classroom assignment link provided by your instructor. This will create a new repository with the Week 9 starter code.
 
 1. **Clone your new repository:**
    ```bash
@@ -32,10 +32,10 @@ This week, you'll elevate your portfolio from a static React application to a dy
 
 2. **Choose your path:**
 
-#### Option A: Continue from Week 9 (Recommended)
-If you completed the Week 9 project and want to build upon it:
+#### Option A: Continue from Week 8 (Recommended)
+If you completed the Week 8 project and want to build upon it:
 
-1. **Copy your Week 9 src folder** into the starter repository
+1. **Copy your Week 8 src folder** into the starter repository
 2. **Keep the starter's package.json** - it includes json-server for our mock API
 3. **Install dependencies:**
    ```bash
