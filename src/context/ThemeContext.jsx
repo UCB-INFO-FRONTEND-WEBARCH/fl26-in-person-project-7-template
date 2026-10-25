@@ -21,7 +21,7 @@ export const ThemeProvider = ({ children }) => {
   // });
 
   // TODO: Create a useEffect to:
-  // 1. Add theme class to document.body
+  // 1. Set data-theme on the <html> element: document.documentElement.setAttribute('data-theme', theme)
   // 2. Save theme to localStorage
   // This should run whenever theme changes
   // useEffect(() => {

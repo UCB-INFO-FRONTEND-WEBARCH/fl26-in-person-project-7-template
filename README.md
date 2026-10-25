@@ -19,7 +19,7 @@ Before starting, you should have:
 ### Project Overview
 Last week your portfolio became components that own their own state. Today two things change. The theme (light or dark) becomes global state that every component can read through a Context, so the toggle in the Navbar changes the whole page without a prop chain. And the project list stops being a hardcoded array: a Projects Context fetches it from a REST API (a local mock server, `json-server`) inside `useEffect`, shows a spinner while it loads, shows an error with a retry if the request fails, and cleans up after itself.
 
-These are the patterns the rest of the term is built on. The 253A group project is a front end that talks to an external API: today's `useEffect` plus `fetch` plus loading and error states is exactly that pattern, done once on your own portfolio before you do it on your team's idea. Assignment 2 (the React Task Manager, due Friday October 30, 9:00 AM PT) does not need an API, but its `localStorage` persistence is the same lazy `useState` initializer you write in Part 2.
+These are the patterns the rest of the term is built on. The 253A group project is a front end that talks to an external API: today's `useEffect` plus `fetch` plus loading and error states is exactly that pattern, done once on your own portfolio before you do it on your team's idea, and persisting data is a graded group-project requirement (10 points), for which the theme in Part 2 and the POST in Part 5 are the two simplest examples. Assignment 2 (the React Task Manager, due Friday October 30, 9:00 AM PT) grades none of today's material: everything it grades was taught by October 19, so do not add effects, Context or fetch to it, and do not wait for them.
 
 ### Getting Started
 
@@ -49,16 +49,17 @@ Today there are two servers: Vite for the page, and `json-server` for the mock A
    This runs `npm run dev` (Vite, port 5173) and `npm run server` (json-server, port 3001) in the same terminal. Keep it running all session.
 4. **Check both:** open `http://localhost:5173` for the portfolio, and `http://localhost:3001/projects` in a second tab. The second tab must show a JSON array of six projects. If it does not, nothing you write in Part 3 can work: see Troubleshooting, "json-server is not running".
 
-**What the starter gives you:** a complete component set under `src/components/` (`Navbar`, `Hero`, `Skills`, `Projects`, `ProjectCard`, `Contact`, `Footer`, plus two new ones, `LoadingSpinner` and `ErrorMessage`), each with TODO comments where today's work goes; two context files under `src/context/` (`ThemeContext.jsx`, `ProjectsContext.jsx`) that are stubs: the hooks return `{}` and the contexts are `null` until you fill them in; `src/data/db.json`, the mock database json-server serves (six projects in three categories: `web`, `mobile`, `data`); `src/main.jsx` with TODOs for the two providers; `src/App.jsx` with TODOs for the theme; a finished `App.css`, and an `index.css` whose `[data-theme="dark"]` rules are already written. `Projects.jsx` renders nothing yet: its `projects` array is a hardcoded empty array until Part 4 reads it from context.
+**What the starter gives you:** a complete component set under `src/components/` (`Navbar`, `Hero`, `Skills`, `Projects`, `ProjectCard`, `Contact`, `Footer`, plus two new ones, `LoadingSpinner` and `ErrorMessage`), each with TODO comments where today's work goes; two context files under `src/context/` (`ThemeContext.jsx`, `ProjectsContext.jsx`) that are stubs: the hooks return `{}` and the contexts are `null` until you fill them in; `src/data/db.json`, the mock database json-server serves (six projects in three categories: `web`, `mobile`, `data`); `src/main.jsx` with TODOs for the two providers; `src/App.jsx` with TODOs for the theme; a finished `App.css`, and an `index.css` whose `[data-theme="dark"]` rules are already written. `Projects.jsx` shows only its filter buttons and "No projects found in this category." until Part 4: its `projects` array is a hardcoded empty array until then.
 
 #### Third: Choose your path
 
-#### Option A: Continue from Week 8 (Recommended)
-If you completed In-Person Project 6 and customized your content:
+#### Option A: Bring your week 8 content (Recommended)
+If you completed In-Person Project 6 and customized your content (this is a fresh repository either way; nothing continues from your IPP 6 repo except what you copy):
 
 1. **Keep every starter file.** The starter's `Navbar.jsx`, `Projects.jsx`, `main.jsx`, `App.jsx`, both context files, `db.json` and `App.css` carry today's TODOs and the dark-theme CSS. Do not replace them with your week 8 versions.
 2. **Bring your content, not your structure.** Copy your own text into the starter's `Hero.jsx`, `Skills.jsx`, `Contact.jsx` and `Footer.jsx` (your name, your skills, your links). If you want your own projects, edit `src/data/db.json`: keep the field names (`id`, `title`, `description`, `category`, `technologies`, `imageUrl`, `githubUrl`, `liveUrl`, `featured`, `createdAt`), because `ProjectCard.jsx` reads them.
 3. **Open your week 8 `Projects.jsx` beside the starter's** for reference; the filter state you wrote last week is already in the starter, and Part 4 adds the loading and error branches above it.
+4. **Your CSS tweaks from week 8** are not in the starter's `App.css` (it is the stock file plus the dark-theme variables). Copy them over after Part 4, once the page renders from the API.
 
 #### Option B: Fresh Start
 If you did not finish In-Person Project 6, use the starter exactly as it is. It is the finished week 8 portfolio ("John Doe") with today's TODOs added; every Part below works on it without any copying.
@@ -115,7 +116,7 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    document.body.className = theme; // not required by the CSS (it keys on data-theme), kept so DevTools shows the mode on <body>
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -134,8 +135,8 @@ export const ThemeProvider = ({ children }) => {
 ```
 
 **What's happening here:**
-- `useState(() => ...)` is a lazy initializer: the function runs once, on the first render, so `localStorage` is read once, not on every render. Assignment 2's persistence uses this exact form.
-- The effect runs after every render in which `theme` changed (that is what `[theme]` means), and does the two side effects React must not do during render: touching the DOM and writing storage.
+- `useState(() => ...)` is a lazy initializer: the function runs once, on the first render, so `localStorage` is read once, not on every render.
+- The effect runs after every render in which `theme` changed (that is what `[theme]` means), and does the two side effects React must not do during render: touching the DOM and writing storage. The attribute goes on `<html>` (`document.documentElement`) so that `index.css`'s `[data-theme="dark"]` rules reach everything, Navbar and Footer included; putting it on `<main>` would darken only the middle of the page, because CSS custom properties inherit downward only.
 - The hook throws if there is no provider above it: a loud failure in the console beats a silent `undefined`.
 
 **Step 2: Wrap the app in `src/main.jsx`**
@@ -144,14 +145,14 @@ Import `ThemeProvider` and put it around `<App />` inside `StrictMode`. (Leave r
 
 **Step 3: Use the theme**
 
-In `src/App.jsx`, call `useTheme()` and put `data-theme={theme}` on the `<main>` element (the CSS already has `[data-theme="dark"]` rules). In `src/components/Navbar.jsx`, call `useTheme()` and add a button that shows the other mode's name and calls `toggleTheme` on click.
+In `src/components/Navbar.jsx`, call `useTheme()` and add a button that calls `toggleTheme` on click; its label is a sun icon in light mode and a moon in dark (an emoji is fine), or the other mode's name. The starter's `App.jsx` TODO about `<main>` is not needed: the effect above already applies the theme to the whole document, so leave `App.jsx` alone.
 
 **Common mistakes to avoid:**
 - Calling `useTheme()` in a component that is not under the provider (the thrown error names it)
 - Reading `localStorage` inside the effect instead of the initializer, so the first render is always light
 - Forgetting the dependency array, so the effect runs after every render
 
-**Checkpoint:** the Navbar button flips the page between light and dark; refresh the page and it stays in the mode you chose. In DevTools, Application tab, Local Storage, you can see the `theme` key.
+**Checkpoint:** the Navbar button flips the whole page, header and footer included, between light and dark; refresh the page and it stays in the mode you chose. In DevTools, Application tab, Local Storage, you can see the `theme` key, and in the Elements tab `<html data-theme="dark">`.
 
 #### Part 3: The Projects Context with a Fetch (20 minutes)
 
@@ -216,7 +217,7 @@ export const ProjectsProvider = ({ children }) => {
 
 In `src/main.jsx`, put `<ProjectsProvider>` inside `<ThemeProvider>`, around `<App />`.
 
-**Checkpoint:** nothing visible changes yet (Projects still reads its hardcoded empty array), but in the Network tab you see `projects` requested from port 3001 with a 200 and six items in the response. Stop json-server with Ctrl+C and reload: the request fails; start it again with `npm run server` in a second terminal (or `npm run dev:all` again).
+**Checkpoint:** nothing visible changes yet (Projects still reads its hardcoded empty array), but in the Network tab you see `projects` requested from port 3001 with a 200 and six items in the response (two such requests in development, both 200: that is the StrictMode double run from the last bullet, not a bug). Stop json-server with Ctrl+C and reload: the request fails; start it again with `npm run server` in a second terminal (or `npm run dev:all` again).
 
 #### Part 4: Projects Reads the Context (15 minutes)
 
@@ -230,7 +231,7 @@ const { projects, loading, error } = useProjects();
 
 **Step 2: Three render branches**
 
-Uncomment and finish the two early returns the starter sketched: if `loading`, render the section heading with `<LoadingSpinner />`; if `error`, render the heading with `<ErrorMessage message={error} onRetry={() => window.location.reload()} />`. Only after both does the normal return run: the filter buttons, then
+Uncomment and finish the two early returns the starter sketched: if `loading`, render the section heading with `<LoadingSpinner />`; if `error`, render the heading with `<ErrorMessage message={error} onRetry={() => window.location.reload()} />` (Retry reloads the page, which re-runs the fetch; it does not refetch in place). Only after both does the normal return run: the filter buttons, then
 
 ```jsx
 const filteredProjects = filter === 'all'
@@ -269,14 +270,14 @@ const addProject = async (projectData) => {
 
 Add `addProject` to the `value` object.
 
-**Step 2: A small controlled form**
+**Step 2: A small controlled form, in its own file**
 
-In `Projects.jsx` (or a new `ProjectForm.jsx` you import there), a form with `title`, `description` and a `category` select (`web`, `mobile`, `data`), controlled by one `formData` state object like last week's Contact form. On submit: prevent the default, reject an empty or whitespace-only title (`title.trim() === ''`), `await addProject(formData)` inside `try`/`catch`, reset the form on success, show the error message on failure.
+Create `src/components/ProjectForm.jsx` (`export default ProjectForm`) and render it inside the Projects section, above the filter buttons. Its own file matters: `Projects.jsx` now has two early returns (loading, error), and a hook declared below an early return crashes React with "Rendered more hooks than during the previous render" the moment the fetch resolves. Every `useState` and `useEffect` in a component sits above the first `return`; a separate component sidesteps the question. The form has `title`, `description` and a `category` select (`web`, `mobile`, `data`), controlled by one `formData` state object like last week's Contact form, plus a fixed placeholder image so the new card is not broken: start `formData` with `imageUrl: 'https://placehold.co/600x400?text=New+Project'` and `technologies: []`. On submit: prevent the default, reject an empty or whitespace-only title (`title.trim() === ''`), `await addProject(formData)` inside `try`/`catch`, reset the form on success, show the error message on failure.
 
 **What's happening here:**
 - The server is the source of truth: you append the project the server returned, not the one you sent.
 - `setProjects(prev => [...prev, newProject])` is the immutable update from last week; `projects.push` would not re-render.
-- json-server writes to `src/data/db.json`, so the new project survives a reload. Open the file and watch it change.
+- json-server writes to `src/data/db.json`, so the new project survives a reload. Open the file and watch it change: it rewrites the whole file (every `technologies` array expands onto its own lines), so `git diff` looks large after one POST. Committing the changed file is fine; `git checkout src/data/db.json` restores the six starter projects.
 
 **Checkpoint:** submitting the form adds a card under the right filter without a reload; reloading the page still shows it; an empty title adds nothing; stopping json-server and submitting shows the error path.
 
@@ -289,7 +290,7 @@ If you finish Parts 1 to 5 early, these are the patterns the group project (253A
 **1. A debounced search box**
 - **Goal:** A text input above the project cards that filters by title or description, but only after the user stops typing for half a second.
 - **Done when:** typing quickly does not filter on every keystroke; the list updates once, 500 ms after the last key; clearing the box shows everything again.
-- **Hint:** two pieces of state, `searchTerm` (bound to the input) and `debouncedTerm`; one effect with `[searchTerm]` as its dependency that sets a `setTimeout` and returns `clearTimeout` as its cleanup. Then filter on `debouncedTerm`.
+- **Hint:** two pieces of state, `searchTerm` (bound to the input) and `debouncedTerm`; one effect with `[searchTerm]` as its dependency that sets a `setTimeout` and returns `clearTimeout` as its cleanup. Then filter on `debouncedTerm`. Declare both hooks above `Projects.jsx`'s early returns, or build the box as its own component.
 - **Why it matters:** this is the cleanup-returning effect in its most common real form, and the one interviewers ask about.
 
 #### Tier 2 (about 15 to 20 minutes): for the student who finished Tier 1
@@ -298,16 +299,16 @@ If you finish Parts 1 to 5 early, these are the patterns the group project (253A
 - **Goal:** A delete button on each card that removes the project from the list immediately and sends a DELETE to `http://localhost:3001/projects/<id>`; if the request fails, the project comes back and an error shows.
 - **Done when:** the card disappears with no visible delay; after a reload it is still gone; with json-server stopped, the card disappears and then returns with an error message.
 - **Ceiling, stop here:** no edit, no confirmation dialog, no styling.
-- **Hint:** keep the old array in a variable before you `setProjects(prev => prev.filter(...))`; in the `catch`, `setProjects(oldProjects)`. The context function and the button live in different files; the id travels as a prop.
+- **Hint:** keep the old array in a variable before you `setProjects(prev => prev.filter(...))`; in the `catch`, `setProjects(oldProjects)` and set a separate `deleteError` state for the message. Do not reuse the context's `error`: that one replaces the whole grid with the ErrorMessage branch, so the card could never "come back". The context function and the button live in different files; the id travels as a prop.
 - **Why it matters:** optimistic updates are how every real app feels fast, and the rollback is the part people forget.
 
 #### Tier 3 (about 15 to 25 minutes, a bounded task): a real external API
 
 **3. Your GitHub repositories, fetched live**
 - **Goal:** In a new component `GitHubRepos.jsx` rendered under Projects, fetch `https://api.github.com/users/<your-github-username>/repos` on mount and list each repository's name as a link, with a loading line and an error line, and the same cancelled-flag cleanup as Part 3.
-- **Done when:** your real repositories appear; a misspelled username shows the error path (GitHub returns 404); the Network tab shows exactly one request per mount in production mode, two in StrictMode with the first cleaned up.
+- **Done when:** your real repositories appear (the IPP 7 repository you made today counts); a misspelled username shows the error path (GitHub returns 404); the Network tab shows two requests in development with the first one's cleanup fired.
 - **Ceiling, stop here:** no search, no pagination, no stars or dates.
-- **Hint:** the shape is Part 3's effect moved into a component (`useState` for `repos`, `loading`, `error`, one `useEffect` with `[]`). GitHub allows 60 unauthenticated requests an hour per address: do not put the fetch inside anything that re-runs on every render.
+- **Hint:** the shape is Part 3's effect moved into a component (`useState` for `repos`, `loading`, `error`, one `useEffect` with `[]`). GitHub allows 60 unauthenticated requests an hour per public address, and a lecture hall shares a few: if your error branch shows `status 403`, that is the rate limit, not your code; switch the URL to `https://jsonplaceholder.typicode.com/users` (keyless, no limit) and render `name` instead. No API keys in this repository: it is Public, so a key in a `.env` file or a `VITE_` variable ends up on GitHub or in the browser bundle; team API keys belong in the team repo's setup, never here.
 - **Why it matters:** this is the 253A group project's core requirement (a front end on an external API) and the shape of the 153A take-home final's data step. If your team has already chosen its API, use that endpoint instead of GitHub's.
 
 ### Troubleshooting Guide
@@ -372,10 +373,24 @@ If you finish Parts 1 to 5 early, these are the patterns the group project (253A
 
 ---
 
+**Problem:** "Rendered more hooks than during the previous render", and the page goes white when the projects load
+
+**Solution:**
+- A `useState` or `useEffect` sits below one of `Projects.jsx`'s early returns (loading or error). Move every hook above the first `return`, or move that feature into its own component file (`ProjectForm.jsx`, `ProjectSearch.jsx`).
+
+---
+
 **Problem:** The theme toggles but does not survive a reload
 
 **Solution:**
 - The initial state must read `localStorage` (the lazy initializer in Part 2), and the effect must write it. Check the key is the same string in both places.
+
+---
+
+**Problem:** Only the middle of the page goes dark; the header and footer stay light
+
+**Solution:**
+- `data-theme` is on `<main>` instead of `<html>`. The dark rules are CSS custom properties, which inherit downward only. Set it in the effect with `document.documentElement.setAttribute('data-theme', theme)` and remove any `data-theme` from `App.jsx`.
 
 ---
 
@@ -434,13 +449,12 @@ npm run dev:all
 - [json-server](https://github.com/typicode/json-server)
 
 **Week 9 Prep Work:**
-- React Front To Back Chapter 6 - useEffect and Data Fetching
-- React Front To Back Chapter 7 - Context API
+- React Front To Back Chapters 6 and 7 - useEffect, Context & APIs
 - Optional: Modern JavaScript Chapter 10 - Promises and Async
 
 ### Submit
 
-1. Commit and push your work before you leave (the `.gitignore` in this repository keeps `node_modules` and `dist` out of the push, so it is quick):
+1. Commit and push your work before you leave (the `.gitignore` in this repository keeps `node_modules`, `dist` and any `.env` file out of the push, so it is quick and safe):
    ```bash
    git add .
    git commit -m "In-person project 7"
@@ -454,7 +468,7 @@ npm run dev:all
 
 Before submitting:
 - [ ] `npm run dev:all` runs both servers and the console is clean on load
-- [ ] `ThemeContext.jsx` has a real context, a hook that throws without a provider, a lazy-initialized `theme` and an effect that writes `document.body` and `localStorage`
+- [ ] `ThemeContext.jsx` has a real context, a hook that throws without a provider, a lazy-initialized `theme` and an effect that sets `data-theme` on `<html>` and writes `localStorage`
 - [ ] `main.jsx` wraps `<App />` in `ThemeProvider` and `ProjectsProvider`
 - [ ] The Navbar toggle flips the theme; a reload keeps it
 - [ ] `ProjectsContext.jsx` fetches once on mount inside `useEffect`, with `response.ok` checked, errors caught, and an `isCancelled` cleanup

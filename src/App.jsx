@@ -7,11 +7,10 @@ import Contact from './components/Contact'
 import Footer from './components/Footer'
 import './App.css'
 
-// TODO: Import useTheme hook from context
 
 function App() {
-  // TODO: Get theme from context
-  // TODO: Add data-theme attribute to main element based on theme
+  // Nothing to do here for the theme: ThemeProvider's effect sets data-theme on <html>,
+  // so index.css's [data-theme="dark"] rules reach the Navbar and Footer too.
 
   return (
     <div className="App">

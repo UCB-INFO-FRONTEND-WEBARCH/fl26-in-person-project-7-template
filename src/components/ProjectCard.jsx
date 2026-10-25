@@ -1,5 +1,4 @@
 const ProjectCard = ({ project }) => {
-  // TODO: Add hover effects and animations
 
   return (
     <div className="project-card">
